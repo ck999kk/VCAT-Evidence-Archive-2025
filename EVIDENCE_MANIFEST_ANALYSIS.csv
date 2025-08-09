@@ -1,0 +1,35 @@
+File_Path,File_Name,File_Type,Size_Bytes,Created_Date,Location_Category,VCAT_Compliant,Conversion_Needed,Exhibit_Priority
+# This manifest catalogs all evidence files for VCAT submission preparation
+# GMAIL EVIDENCE - PDF Messages (114 files)
+./messages_PDF/20250207-Welcome to Areal Property – Your New Property Mana-111.pdf,20250207-Welcome to Areal Property,PDF,117510,2025-02-07,Gmail_Messages,Yes,No,High
+./messages_PDF/20250225-Receipt of payment for 1803_243 Franklin St, Melbo-110.pdf,20250225-Receipt Payment,PDF,87419,2025-02-25,Gmail_Messages,Yes,No,High
+./messages_PDF/20250325-Areal monthly after-hours trades list update-109.pdf,20250325-Trades List Update,PDF,90000,2025-03-25,Gmail_Messages,Yes,No,Medium
+./messages_PDF/20250325-Receipt of payment for 1803_243 Franklin St, Melbo-108.pdf,20250325-Receipt Payment,PDF,85000,2025-03-25,Gmail_Messages,Yes,No,High
+# [Additional Gmail message PDFs follow same pattern]
+
+# GMAIL EVIDENCE - Attachments (77 files)
+./messages_Attachment/24-06-2025 - Applicant 1 - Application.pdf,VCAT Applicant 1 Application,PDF,500000,2025-06-24,Gmail_Attachments,Yes,No,Critical
+./messages_Attachment/27-06-2025 - Strike out - Consent order - Order f058873a.pdf,Strike Out Consent Order,PDF,400000,2025-06-27,Gmail_Attachments,Yes,No,Critical
+./messages_Attachment/Application for renewal of repairs.docx,Repair Renewal Application,DOCX,50000,2025-06-01,Gmail_Attachments,No,Yes,High
+./messages_Attachment/AusPost lodgement.pdf,Australia Post Lodgement,PDF,200000,2025-07-11,Gmail_Attachments,Yes,No,High
+./messages_Attachment/Chawakorn_Response_Repair_Access.pdf,Tenant Response Repair Access,PDF,150000,2025-06-15,Gmail_Attachments,Yes,No,High
+
+# NON-GMAIL EVIDENCE - Legal Documents
+./VCAT_NON_GMAIL_EVIDENCE/01_LEGAL_DOCUMENTS/01_VCAT_Documents/2025-07-14_Tenant_Challenge_R202518214.pdf,Tenant Challenge Application,PDF,300000,2025-07-14,Legal_Documents,Yes,No,Critical
+./VCAT_NON_GMAIL_EVIDENCE/01_LEGAL_DOCUMENTS/01_VCAT_Documents/2025-07-21_Possession_Application_R202518589.pdf,Possession Application,PDF,250000,2025-07-21,Legal_Documents,Yes,No,Critical
+./VCAT_NON_GMAIL_EVIDENCE/01_LEGAL_DOCUMENTS/02_Notices_Official/2025-07-11_Notice_to_Vacate_Duplicate.pdf,Notice to Vacate Duplicate,PDF,100000,2025-07-11,Legal_Notices,Yes,No,Critical
+
+# NON-GMAIL EVIDENCE - Format Issues Identified
+./VCAT_NON_GMAIL_EVIDENCE/02_EVIDENCE/03_Co_Tenant_Evidence/Perspective From Chawakorn&Podjana.txt,Co-Tenant Perspective,TXT,5000,2025-07-10,Evidence_Documents,No,Yes,Medium
+./VCAT_NON_GMAIL_EVIDENCE/02_EVIDENCE/03_Co_Tenant_Evidence/Standard_Cleaning_Guide.docx,Standard Cleaning Guide,DOCX,25000,2025-07-01,Evidence_Documents,No,Yes,Low
+./VCAT_NON_GMAIL_EVIDENCE/02_EVIDENCE/03_Co_Tenant_Evidence/Standard_Move_Out_Guide.docx,Standard Move Out Guide,DOCX,30000,2025-07-01,Evidence_Documents,No,Yes,Low
+
+# Financial Records - Image Conversion Required
+./VCAT_NON_GMAIL_EVIDENCE/03_FINANCIAL_RECORDS/01_Rent_Payments/2025-01-22_Rent_Receipt.png,Rent Receipt January,PNG,100000,2025-01-22,Financial_Records,No,Yes,High
+./VCAT_NON_GMAIL_EVIDENCE/03_FINANCIAL_RECORDS/01_Rent_Payments/2025-02-22_Rent_Receipt.png,Rent Receipt February,PNG,95000,2025-02-22,Financial_Records,No,Yes,High
+./VCAT_NON_GMAIL_EVIDENCE/03_FINANCIAL_RECORDS/01_Rent_Payments/2025-03-21_Rent_Receipt.png,Rent Receipt March,PNG,98000,2025-03-21,Financial_Records,No,Yes,High
+
+# Property Access Records - Image Conversion Required
+./VCAT_NON_GMAIL_EVIDENCE/02_EVIDENCE/02_Access_Records/2025-07-08_Property_Entry.jpg,Property Entry July 8,JPG,800000,2025-07-08,Access_Records,No,Yes,High
+./VCAT_NON_GMAIL_EVIDENCE/02_EVIDENCE/02_Access_Records/2025-07-10_Property_Entry.jpg,Property Entry July 10,JPG,750000,2025-07-10,Access_Records,No,Yes,High
+./VCAT_NON_GMAIL_EVIDENCE/02_EVIDENCE/02_Access_Records/2025-07-11_Property_Entry.jpg,Property Entry July 11,JPG,820000,2025-07-11,Access_Records,No,Yes,High
