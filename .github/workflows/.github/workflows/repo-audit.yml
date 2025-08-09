@@ -1,0 +1,194 @@
+name: Repository Evidence Audit
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "**/*.csv"
+      - "**/*.pdf"
+      - "**/*.md"
+      - "**/*.xlsx"
+      - "VCAT_*/**"
+      - "messages_PDF/**"
+      - "_GMAIL_EVIDENCE/**"
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python - <<'PY'
+          import sys,subprocess
+          pkgs=["pandas"]
+          subprocess.check_call([sys.executable,"-m","pip","install","--quiet",*pkgs])
+          PY
+
+      - name: Build file inventory + SHA256
+        shell: bash
+        run: |
+          set -euo pipefail
+          REPORT_DIR="_audit"
+          mkdir -p "$REPORT_DIR"
+          # hash all files except .git and audit dir itself
+          find . -type f ! -path "./.git/*" ! -path "./$REPORT_DIR/*" -print0 \
+            | xargs -0 sha256sum | sed 's#  \./#,#' > "$REPORT_DIR/all_sha256.txt"
+          echo 'path,size_bytes,sha256' > "$REPORT_DIR/file_inventory.csv"
+          awk -F, '{ sha=$1; path=$2; gsub(/^\//,"",path);
+            cmd="stat -c%s \"" path "\""; cmd | getline sz; close(cmd);
+            gsub(/"/,"\"\"",path);
+            printf("\"%s\",%s,%s\n", path, sz, sha);
+          }' "$REPORT_DIR/all_sha256.txt" >> "$REPORT_DIR/file_inventory.csv"
+
+      - name: Audit manifest vs repo + exhibit continuity
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv, os, re, json, sys
+          from pathlib import Path
+          repo = Path(".")
+          rdir = repo/"_audit"
+          inv_csv = rdir/"file_inventory.csv"
+          manifest = repo/"EVIDENCE_MANIFEST_ANALYSIS.csv"
+
+          # load inventory
+          inv = {}
+          with open(inv_csv, newline='', encoding='utf-8') as f:
+            for i,row in enumerate(csv.DictReader(f),1):
+              inv[row["path"].lstrip("./")] = row
+
+          def is_evidence(p):
+            b=os.path.basename(p)
+            if p.startswith("_audit/"): return False
+            if b in (".DS_Store","README"): return False
+            return True
+
+          evidence_paths = [p for p in inv if is_evidence(p)]
+
+          # load manifest (file path column flexible)
+          issues = {"missing_in_repo":[], "missing_in_manifest":[], "exhibit_gaps":[], "exhibit_dups":[]}
+          manifest_paths=[]
+          if manifest.exists():
+            with open(manifest, newline='', encoding='utf-8') as f:
+              rdr = csv.DictReader(f)
+              hdr=[h.strip().lower() for h in rdr.fieldnames]
+              file_cols={"filepath","file_path","path","relative_path","repo_path","source_path","file","filename"}
+              col = next((c for c in hdr if c in file_cols), None)
+              if col:
+                for r in rdr:
+                  p = (r.get(col,"") or "").lstrip("./")
+                  if p: manifest_paths.append(p)
+          else:
+            issues["missing_manifest"]=True
+
+          # 1) manifest -> repo
+          for mp in manifest_paths:
+            if mp not in inv:
+              issues["missing_in_repo"].append(mp)
+
+          # 2) repo -> manifest
+          for rp in evidence_paths:
+            bn = os.path.basename(rp).lower()
+            if bn in ("evidence_manifest_analysis.csv","comprehensive_ai_intelligence_briefing.md","executive_coordination_plan.md"):
+              continue
+            if rp not in manifest_paths:
+              issues["missing_in_manifest"].append(rp)
+
+          # 3) exhibits continuity + dups (A001, F114, G007 etc.)
+          pat=re.compile(r"\b([A-Z])(\d{3})\b", re.I)
+          seen={}
+          dups=set()
+          by_letter={}
+          for p in evidence_paths:
+            m=pat.search(os.path.basename(p))
+            if m:
+              L=m.group(1).upper(); N=int(m.group(2))
+              by_letter.setdefault(L,set()).add(N)
+              tag=(L,N)
+              if tag in seen: dups.add(tag)
+              seen[tag]=seen.get(tag,0)+1
+
+          for L,nums in by_letter.items():
+            nums=sorted(nums)
+            if nums:
+              exp=range(nums[0], nums[-1]+1)
+              gaps=[n for n in exp if n not in nums]
+              if gaps: issues["exhibit_gaps"].append({"letter":L,"gaps":gaps})
+          if dups:
+            issues["exhibit_dups"]=[{"letter":L,"num":N} for (L,N) in sorted(dups)]
+
+          with open(rdir/"issues.json","w",encoding="utf-8") as f:
+            json.dump(issues,f,ensure_ascii=False,indent=2)
+
+          # write summary.md
+          def bullet_list(items, key=None):
+            if not items: return "- (none)\n"
+            out=[]
+            for it in items:
+              if isinstance(it, dict): out.append(f"- {json.dumps(it, ensure_ascii=False)}")
+              else: out.append(f"- {it}")
+            return "\n".join(out)+"\n"
+
+          total_files=len(evidence_paths)
+          with open(rdir/"SUMMARY.md","w",encoding="utf-8") as f:
+            f.write("# Repository Audit Summary\n\n")
+            f.write(f"- Files scanned: {total_files}\n")
+            if issues.get("missing_manifest"): f.write("- ❗ Missing manifest file: EVIDENCE_MANIFEST_ANALYSIS.csv\n")
+            f.write("## Missing in repo (referenced by manifest)\n")
+            f.write(bullet_list(issues["missing_in_repo"]))
+            f.write("## Missing in manifest (present in repo)\n")
+            f.write(bullet_list(issues["missing_in_manifest"]))
+            f.write("## Exhibit gaps\n")
+            f.write(bullet_list(issues["exhibit_gaps"]))
+            f.write("## Exhibit duplicates\n")
+            f.write(bullet_list(issues["exhibit_dups"]))
+          PY
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit_artifacts
+          path: |
+            _audit/SUMMARY.md
+            _audit/file_inventory.csv
+            _audit/all_sha256.txt
+            _audit/issues.json
+
+      - name: Commit summary into repo (optional)
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          set -e
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add _audit/SUMMARY.md _audit/file_inventory.csv _audit/all_sha256.txt _audit/issues.json || true
+          git commit -m "Audit: update SUMMARY & inventory" || echo "No changes"
+          git push || true
+
+      - name: Create/Update Issue with problems (optional)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json,subprocess,os,sys
+          p="_audit/issues.json"
+          if not os.path.exists(p): sys.exit(0)
+          J=json.load(open(p))
+          probs = (J.get("missing_in_repo") or []) + (J.get("missing_in_manifest") or []) + (J.get("exhibit_gaps") or []) + (J.get("exhibit_dups") or [])
+          if not probs: sys.exit(0)
+          body = "## Evidence Audit Problems\n\nSee `_audit/SUMMARY.md` and `audit_artifacts`.\n\n```json\n"+json.dumps(J,ensure_ascii=False,indent=2)+"\n```"
+          subprocess.run(["gh","issue","list"],check=False)
+          title="Evidence Audit: issues detected"
+          subprocess.run(["gh","issue","create","--title",title,"--body",body],check=False)
+          PY
