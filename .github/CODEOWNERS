@@ -1,0 +1,15 @@
+# VCAT Evidence Repository Code Owners
+
+# Core evidence files require legal review
+/VCAT_SUBMISSION_PACKAGE/ @legal-reviewer
+/VCAT_NON_GMAIL_EVIDENCE/ @forensic-reviewer
+
+# Automation and workflows require admin approval
+/90_scripts/ @repo-admin
+/.github/ @repo-admin
+
+# Documentation and reports
+*.md @documentation-lead
+
+# Critical files require multiple reviewers
+/VCAT_SUBMISSION_PACKAGE/02_EVIDENCE_INDEX/ @legal-reviewer @forensic-reviewer

@@ -1,0 +1,29 @@
+name: VCAT Evidence Validation
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qpdf ghostscript poppler-utils tesseract-ocr
+          pip install pandas PyPDF2 pikepdf
+      - name: Generate integrity manifest
+        run: |
+          bash 90_scripts/gen_manifest.sh
+      - name: Validate PDF integrity
+        run: |
+          python 90_scripts/validate_pdfs.py
+      - name: Check evidence index consistency
+        run: |
+          python 90_scripts/check_evidence_index.py
